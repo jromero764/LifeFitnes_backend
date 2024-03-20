@@ -22,27 +22,40 @@ class UsuariosController extends Controller
             $Usuario->ci=$request->ci;
             $Usuario->Nombre = $request->Nombre;
             $Usuario->Apellido = $request->Apellido;
-            $Usuario->FechaDeNacimiento = $request->FechaDeNacimiento;
+            $fechaNacimiento = date('Y-m-d', strtotime($request->FechaDeNacimiento));
+            $Usuario->FechaDeNacimiento = $fechaNacimiento;
             $Usuario->Telefono = $request->Telefono;
             $Usuario->Mail = $request->Mail;
             $Usuario->Sexo = $request->Sexo;
             $Usuario->estado=false;
             $Usuario->save();
 
-
-        $Usuario=Usuarios::latest()->first();
-        if ($request->Opcion==='Administrador'){return $this->AltaDeAdministrador($Usuario->ci);}
-        if ($request->Opcion==='Cliente'){return $this->AltaDeCliente($Usuario->ci);}
+        if ($request->Opcion==='Administrador'){return $this->AltaDeAdministrador($Usuario->id,$request->password);}
+        if ($request->Opcion==='Cliente'){return $this->AltaDeCliente($Usuario->id);}
     }
     
 
   
-    public function show($ci)
+    // public function show($ci)
+    // {
+    //     //
+    //     if($ci!=0){
+    //         $Usuarios=DB::table('usuarios')
+    //         ->where('ci','=',$ci)
+    //         ->first();
+    //         return response()->json($Usuarios);
+    //     }
+    //     $Usuarios=DB::table('usuarios')
+    //     ->get();
+    //     return response()->json($Usuarios);
+    // }
+
+    public function show($idUsuario)
     {
         //
-        if($ci!=0){
+        if(!$idUsuario){
             $Usuarios=DB::table('usuarios')
-            ->where('ci','=',$ci)
+            ->where('id','=',$idUsuario)
             ->first();
             return response()->json($Usuarios);
         }
@@ -58,8 +71,9 @@ class UsuariosController extends Controller
     {
         //
         DB::table('usuarios')
-            ->where('ci', '=',$idUsuario)
+            ->where('id', '=',$idUsuario)
             ->update([
+            'ci'=>$request->ci,    
             'Nombre' => $request->Nombre,
             'Apellido' => $request->Apellido,
             'FechaDeNacimiento' => $request->FechaDeNacimiento,
@@ -76,7 +90,7 @@ class UsuariosController extends Controller
     public function destroy($idUsuario)
     {
         DB::table('usuarios')
-            ->where('ci', '=',$idUsuario)
+            ->where('id', '=',$idUsuario)
             ->delete();
 
          return response()->json([
@@ -86,10 +100,10 @@ class UsuariosController extends Controller
         ]);
     }
 
-    function AltaDeAdministrador($ci){
+    function AltaDeAdministrador($id,$password){
     $Administrador = new Administradores();
-    $Administrador->usuarios_ci=$ci;
-    $Administrador->password=bcrypt($ci);
+    $Administrador->id_usuarios=$id;
+    $Administrador->password=bcrypt($password);
     $Administrador->save();
     return response()->json([
         "codigo"    => "200",
@@ -98,9 +112,9 @@ class UsuariosController extends Controller
     
     }
 
-    function AltaDeCliente($ci){
+    function AltaDeCliente($id){
         $Cliente = new Clientes();
-        $Cliente->usuarios_ci=$ci;
+        $Cliente->id_usuarios=$id;
         $Cliente->save();
         return response()->json([
             "codigo"    => "200",
