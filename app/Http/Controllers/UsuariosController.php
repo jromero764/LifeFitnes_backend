@@ -53,7 +53,7 @@ class UsuariosController extends Controller
     public function show($idUsuario)
     {
         //
-        if(!$idUsuario){
+        if($idUsuario!=0){
             $Usuarios=DB::table('usuarios')
             ->where('id','=',$idUsuario)
             ->first();
