@@ -44,7 +44,7 @@ class IngresosController extends Controller
                     $Administrador=Administradores::where('id_usuarios',$findUser->id)->first();
                     if($request->Administrador==true){
                         if(password_verify($request->password,$Administrador->password)){
-                            return response()->json(["respuesta"    => 'Se valida el ingreso']);
+                            return response()->json(["respuesta"    => 'Se valida el ingreso',"Usuario"=>$Administrador]);
                         }
                         return response()->json(["respuesta"    => 'Contraseña incorrecta']);
                 }

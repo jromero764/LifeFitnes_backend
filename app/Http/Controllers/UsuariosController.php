@@ -55,7 +55,7 @@ class UsuariosController extends Controller
         //
         if($idUsuario!=0){
             $Usuarios=DB::table('usuarios')
-            ->where('id','=',$idUsuario)
+            ->where('ci','=',$idUsuario)
             ->first();
             return response()->json($Usuarios);
         }
