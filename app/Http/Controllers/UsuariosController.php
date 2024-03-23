@@ -52,13 +52,14 @@ class UsuariosController extends Controller
 
     public function show($idUsuario)
     {
-        //
+        //Obtiene el usuario buscado
         if($idUsuario!=0){
             $Usuarios=DB::table('usuarios')
             ->where('ci','=',$idUsuario)
             ->first();
             return response()->json($Usuarios);
         }
+        //Obtiene todos los usuarios
         $Usuarios=DB::table('usuarios')
         ->get();
         return response()->json($Usuarios);

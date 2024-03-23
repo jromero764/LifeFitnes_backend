@@ -73,23 +73,34 @@ class IngresosController extends Controller
         $Ingreso->save();
     }
 
-    
+    // $Ingresos=DB::table('ingresos')
+    //     ->join('usuarios','ingresos.usuarios_ci','=','usuarios.ci')
+    //     ->select('usuarios_ci','HoraIngreso','FechaIngreso','Nombre','Apellido')
+    //     ->where('ingresos.usuarios_ci','=',$ci)
+    //     ->get();
     public function show($ci)
     {
         //
         if($ci!=0){
-        $Ingresos=DB::table('ingresos')
-        ->join('usuarios','ingresos.usuarios_ci','=','usuarios.ci')
-        ->select('usuarios_ci','HoraIngreso','FechaIngreso','Nombre','Apellido')
-        ->where('ingresos.usuarios_ci','=',$ci)
-        ->get();
-        return response()->json($Ingresos);
+        $idCliente = Clientes::whereHas('usuario', function ($query) use ($ci) {
+                $query->where('ci', $ci);
+                })->value('id');
+                if($idCliente!=null){
+                    $Ingresos=DB::table('ingresos')
+                    ->select('id','HoraIngreso','FechaIngreso')
+                    ->where('id_clientes','=',$idCliente)
+                    ->get();
+                    
+           // dd('esto es la respuesta de ingresos',$Ingresos);
+            return response()->json($Ingresos);
         }
-        $Ingresos=DB::table('ingresos')
-        ->join('usuarios','ingresos.usuarios_ci','=','usuarios.ci')
-        ->select('usuarios_ci','HoraIngreso','FechaIngreso','Nombre','Apellido')
-        ->paginate(10);
-        return response()->json($Ingresos);
+        // 
+        }
+        // $Ingresos=DB::table('ingresos')
+        // ->join('usuarios','ingresos.usuarios_ci','=','usuarios.ci')
+        // ->select('usuarios_ci','HoraIngreso','FechaIngreso','Nombre','Apellido')
+        // ->paginate(10);
+        // return response()->json($Ingresos);
 
     }
 

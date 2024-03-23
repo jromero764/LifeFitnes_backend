@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Clientes extends Model
 {
     use HasFactory;
-    public function Usuarios(){
-        return $this->belongsTo(Usuarios::class, "usuarios_ci", "ci");
+    public function Usuario(){
+        return $this->belongsTo(Usuarios::class, "id_usuarios", "id");
     }
 }
