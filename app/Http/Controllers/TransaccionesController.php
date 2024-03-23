@@ -15,8 +15,8 @@ class TransaccionesController extends Controller
     {
         //
         $Transaccion = new Transacciones();
-        $Transaccion->usuarios_ci=$request->ci;
-        $Transaccion->socios_ci=$request->socios_ci;
+        $Transaccion->id_administrador=$request->ci;
+        $Transaccion->id_clientes=$request->socios_ci;
         $Transaccion->productos_id=$request->productos_id;
         $Transaccion->HoraTransaccion=Carbon::now()->format('H:i:s');
         $Transaccion->FechaTransaccion=Carbon::now()->format('Y:m:d');
@@ -88,6 +88,7 @@ class TransaccionesController extends Controller
         ->paginate(10);
         return response()->json($Transacciones);
     }
+    //Obtener historial de cuotas del usuario
     public function ConsultarCuotas($ci){
         if($ci!=0){
             $idCliente = Clientes::whereHas('usuario', function ($query) use ($ci) {
