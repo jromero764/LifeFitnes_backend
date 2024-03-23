@@ -54,12 +54,17 @@ class UsuariosController extends Controller
     {
         //Obtiene el usuario buscado
         if($idUsuario!=0){
+            $usuario = Usuarios::whereHas('cliente', function ($query) use ($idUsuario) {
+                $query->where('ci', $idUsuario);
+            })->with('cliente')->first();
+            return response()->json($usuario);
+            
             $Usuarios=DB::table('usuarios')
             ->where('ci','=',$idUsuario)
             ->first();
-            return response()->json($Usuarios);
         }
         //Obtiene todos los usuarios
+        
         $Usuarios=DB::table('usuarios')
         ->get();
         return response()->json($Usuarios);

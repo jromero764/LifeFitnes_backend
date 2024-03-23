@@ -15,15 +15,15 @@ class TransaccionesController extends Controller
     {
         //
         $Transaccion = new Transacciones();
-        $Transaccion->id_administrador=$request->ci;
-        $Transaccion->id_clientes=$request->socios_ci;
+        $Transaccion->id_administrador=$request->id_administrador;
+        $Transaccion->id_clientes=$request->id_clientes;
         $Transaccion->productos_id=$request->productos_id;
         $Transaccion->HoraTransaccion=Carbon::now()->format('H:i:s');
         $Transaccion->FechaTransaccion=Carbon::now()->format('Y:m:d');
         $Transaccion->TipoDeTransaccion=$request->TipoDeTransaccion;
         $Transaccion->save();
         if($request->productos_id===1){
-            $Cuota=Usuarios::where('ci','=',$request->socios_ci)
+            $Cuota=Usuarios::where('ci','=',$request->ci_cliente)
             ->update([
                 'estado' => 1
             ]);
@@ -96,11 +96,12 @@ class TransaccionesController extends Controller
                 })->value('id');
 
         $Cuotas=DB::table('transacciones')
-        ->select('id','HoraTransaccion','FechaTransaccion')
-        ->where('id_clientes','=',$idCliente)
-        ->where('productos_id','=',1)
+        ->select('transacciones.id', 'HoraTransaccion', 'FechaTransaccion', 'id_administrador', 'ci')
+        ->join('administradores', 'administradores.id', '=', 'transacciones.id_administrador')
+        ->join('usuarios', 'usuarios.id', '=', 'administradores.id_usuarios')
+        ->where('id_clientes', '=', $idCliente)
+        ->where('productos_id', '=', 1)
         ->get();
-        
         return response()->json($Cuotas);
         }
     }
