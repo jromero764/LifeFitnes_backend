@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Transacciones;
 use App\Models\Usuarios;
+use App\Models\Clientes;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -87,21 +88,20 @@ class TransaccionesController extends Controller
         ->paginate(10);
         return response()->json($Transacciones);
     }
-
     public function ConsultarCuotas($ci){
         if($ci!=0){
-        $Transacciones=DB::table('transacciones')
+            $idCliente = Clientes::whereHas('usuario', function ($query) use ($ci) {
+                $query->where('ci', $ci);
+                })->value('id');
+
+        $Cuotas=DB::table('transacciones')
+        ->select('id','HoraTransaccion','FechaTransaccion')
+        ->where('id_clientes','=',$idCliente)
         ->where('productos_id','=',1)
-        ->where('transacciones.socios_ci','=',$ci)
-        ->join('usuarios','transacciones.socios_ci','=','usuarios.ci')
         ->get();
-        return response()->json($Transacciones);
+        
+        return response()->json($Cuotas);
         }
-        $Transacciones=DB::table('transacciones')
-        ->where('productos_id','=',1)
-        ->join('usuarios','transacciones.socios_ci','=','usuarios.ci')
-        ->paginate(10);
-        return response()->json($Transacciones);
     }
    
     public function update(Request $request, Transacciones $transacciones)
