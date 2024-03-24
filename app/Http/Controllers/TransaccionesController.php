@@ -41,19 +41,13 @@ class TransaccionesController extends Controller
     public function show($Opcion,$Fecha)
     {
 //--------------------------------------------------------------------------Esta consulta me devuelve las transacciones venta por Fecha-------------------------------------------------------------------------->
-        //id-Vendedor-Cliente-Producto-Hora-Fecha-Precio
+        
         if($Opcion=='Venta'){
-            // $Ventas=DB::table('transacciones')
-            // ->join('productos','transacciones.productos_id','=','productos.id')
-            // ->join('usuarios as u1','transacciones.usuarios_ci','=','u1.ci')
-            // ->join('usuarios as u2','transacciones.socios_ci','=','u2.ci')
-            // ->where('TipoDeTransaccion','=',$Opcion)
-            // ->where('FechaTransaccion','=',$Fecha)
-            // ->select('transacciones.id','u1.Nombre as Vendedor','u2.ci as CI','u2.Nombre as Nombre','u2.Apellido as Apellido','productos.nombre as Producto','transacciones.HoraTransaccion','transacciones.FechaTransaccion','productos.PrecioVenta as Precio')
-            // ->get();
+            
             $Ventas = Transacciones::with('cliente.Usuario', 'administrador.Usuarios','producto')
                 ->where('TipoDeTransaccion', '=', $Opcion)
                 ->where('FechaTransaccion', '=', $Fecha)
+                ->orderBy('HoraTransaccion', 'ASC')
                 ->get();
             return response()->json($Ventas);
 
@@ -67,22 +61,14 @@ class TransaccionesController extends Controller
             return response()->json($VentasDelDia);    
         }
 //------------------------------------------------------------------------Esta consulta me devuelve las transacciones compra por Fecha-------------------------------------------------------------------------->
-        //id-Vendedor-Cliente-Producto-Hora-Fecha-Precio
+      
         if($Opcion=='Compra'){
             $Compras = Transacciones::with('cliente.Usuario', 'administrador.Usuarios')
                 ->where('TipoDeTransaccion', '=', $Opcion)
                 ->where('FechaTransaccion', '=', $Fecha)
                 ->get();
             return response()->json($Compras);
-            // $Compras=DB::table('transacciones')
-            // ->join('productos','transacciones.productos_id','=','productos.id')
-            // ->join('usuarios as u1','transacciones.usuarios_ci','=','u1.ci')
-            // ->join('usuarios as u2','transacciones.socios_ci','=','u2.ci')
-            // ->where('TipoDeTransaccion','=',$Opcion)
-            // ->where('FechaTransaccion','=',$Fecha)
-            // ->select('transacciones.id','u1.Nombre as Vendedor','u2.ci as CI','u2.Nombre as Nombre','u2.Apellido as Apellido','productos.nombre as Producto','transacciones.HoraTransaccion','transacciones.FechaTransaccion','productos.PrecioCompra as Precio')
-            // ->get();
-            // return response()->json($Compras);
+        
 
         }
         //Esta consulta me devuelve el efectivo del dia de las ventas
