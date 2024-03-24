@@ -17,7 +17,7 @@ Route::post('/Usuarios', [UsuariosController::class, 'create']);
 Route::post('/ChangePassword', [UsuariosController::class, 'ChangePassword']);
 Route::get('/Usuarios/{ci}', [UsuariosController::class, 'show']);
 Route::patch('/Usuarios/{ci}', [UsuariosController::class, 'update']);
-Route::delete('/Usuarios/{ci}', [UsuariosController::class, 'destroy']);
+Route::delete('/Usuarios/{id}', [UsuariosController::class, 'destroy']);
 //INGRESOS-------------------------------------------------------------------------------------------------------------------------->
 Route::post('/Ingresos', [IngresosController::class, 'Login']);
 Route::get('/Ingresos/{ci}', [IngresosController::class, 'show']);
