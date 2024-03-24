@@ -11,4 +11,8 @@ class Clientes extends Model
     public function Usuario(){
         return $this->belongsTo(Usuarios::class, "id_usuarios", "id");
     }
+    public function transacciones()
+    {
+        return $this->hasMany(Transacciones::class, 'id_clientes');
+    }
 }

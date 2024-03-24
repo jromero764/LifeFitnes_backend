@@ -10,6 +10,10 @@ class Administradores extends Model
     use HasFactory;
 
     public function Usuarios(){
-        return $this->belongsTo(Usuarios::class, "usuarios_ci", "ci");
+        return $this->belongsTo(Usuarios::class, "id_usuarios", "id");
     }
+    public function transacciones()
+    {
+        return $this->hasMany(Transacciones::class, 'id_administrador');
+    }   
 }
