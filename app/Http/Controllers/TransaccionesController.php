@@ -13,20 +13,36 @@ class TransaccionesController extends Controller
      
     public function create(request $request)
     {
-        //
-        $Transaccion = new Transacciones();
-        $Transaccion->id_administrador=$request->id_administrador;
-        $Transaccion->id_clientes=$request->id_clientes;
-        $Transaccion->productos_id=$request->productos_id;
-        $Transaccion->HoraTransaccion=Carbon::now()->format('H:i:s');
-        $Transaccion->FechaTransaccion=Carbon::now()->format('Y:m:d');
-        $Transaccion->TipoDeTransaccion=$request->TipoDeTransaccion;
-        $Transaccion->save();
+        //Registro de cuota
+        
         if($request->productos_id===1){
+            $Transaccion = new Transacciones();
+            $Transaccion->id_administrador=$request->id_administrador;
+            $Transaccion->id_clientes=$request->id_clientes;
+            $Transaccion->productos_id=$request->productos_id;
+            $Transaccion->HoraTransaccion=Carbon::now()->format('H:i:s');
+            $Transaccion->FechaTransaccion=Carbon::now()->format('Y:m:d');
+            $Transaccion->TipoDeTransaccion=$request->TipoDeTransaccion;
+            $Transaccion->save();
             $Cuota=Usuarios::where('ci','=',$request->ci_cliente)
             ->update([
                 'estado' => 1
             ]);
+        }else{
+            //Registro del resto de las transacciones
+            $id_cliente=null;
+            if($request->id_clientes!=null){
+                $id_cliente = Usuarios::where('ci', $request->id_clientes)->first()->cliente->id;
+            }
+
+            $Transaccion = new Transacciones();
+            $Transaccion->id_administrador=$request->id_administrador;
+            $Transaccion->id_clientes=$id_cliente? $id_cliente:null;
+            $Transaccion->productos_id=$request->productos_id;
+            $Transaccion->HoraTransaccion=Carbon::now()->format('H:i:s');
+            $Transaccion->FechaTransaccion=Carbon::now()->format('Y:m:d');
+            $Transaccion->TipoDeTransaccion=$request->TipoDeTransaccion;
+            $Transaccion->save();
         }
         return response()->json([
             "codigo"    => "200",
@@ -115,4 +131,22 @@ class TransaccionesController extends Controller
             "respuesta" => "Se elimino la transaccion con exito",
         ]);
     }
+
+
+public function deshabilitarUsuariosCuotaVencida(){
+    //return response()->json(["response"=>"true"]);
+    $clientes = Clientes::with('usuario')->get();
+
+    // Actualizar el estado de cada usuario
+    foreach ($clientes as $cliente) {
+        // Verificar si la última transacción es mayor a 31 días
+        $ultimaTransaccion = $cliente->transacciones()->orderBy('FechaTransaccion', 'desc')->first();
+        if ($ultimaTransaccion && Carbon::parse($ultimaTransaccion->FechaTransaccion)->diffInDays(Carbon::now()) > 31) {
+            // Actualizar el estado del usuario
+            $cliente->usuario->estado = 0;
+            $cliente->usuario->save();
+            return response()->json(["response"=>"true"]);
+        }
+    }
+}
 }
