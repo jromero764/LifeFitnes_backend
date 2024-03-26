@@ -73,8 +73,12 @@ class TransaccionesController extends Controller
             $VentasDelDia=DB::table('transacciones')
             ->join('productos','transacciones.productos_id','=','productos.id')
             ->whereDate('FechaTransaccion',$Fecha)
+            ->where('TipoDeTransaccion','=','Venta')
             ->sum('productos.precioventa');
-            return response()->json($VentasDelDia);    
+            return response()->json($VentasDelDia);
+
+            
+            
         }
 //------------------------------------------------------------------------Esta consulta me devuelve las transacciones compra por Fecha-------------------------------------------------------------------------->
       
@@ -92,6 +96,7 @@ class TransaccionesController extends Controller
             $ComprasDelDia=DB::table('transacciones')
             ->join('productos','transacciones.productos_id','=','productos.id')
             ->whereDate('FechaTransaccion',$Fecha)
+            ->where('TipoDeTransaccion','=','Compra')
             ->sum('productos.preciocompra');
             return response()->json($ComprasDelDia);    
         }
