@@ -130,13 +130,14 @@ class UsuariosController extends Controller
         }
 
     function ChangePassword(request $request){
-        DB::table('administradores')
-            ->where('usuarios_ci', '=',$request->ci)
-            ->update(['password' => bcrypt($request->password)]);
-            return response()->json([
-                "codigo"    => "200",
-                "respuesta" => "Se modifico la contraseña con exito",
-            ]);
+        try {
+            Administradores::where('id', $request->id_administrador)
+                ->update(['password' => bcrypt($request->password)]);
+                return response()->json(["respuesta"=>"Se modifica la clave"]);
+        } catch (\Throwable $th) {
+            throw $th;
+        }
+        
     }    
 }
 
