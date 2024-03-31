@@ -58,21 +58,28 @@ class EstadisticasController extends Controller
                 
                 return response()->json(["EdadMujeres"=>$edadPromedioMujeres,"EdadHombres"=>$edadPromedioHombres]);
             }
-            if($sub==='Ingresos'){
-                $promedio = Ingresos::selectRaw('SEC_TO_TIME(AVG(TIME_TO_SEC(HoraIngreso))) as promedio')
-                ->first();
-                $promedio=$promedio->promedio;
-
-                // Convierte el horario a un objeto DateTime
-                $fechaHora = \DateTime::createFromFormat('H:i:s.u', $promedio);
-
-                // Obtiene las horas y minutos
-                $horas = $fechaHora->format('H');
-                $minutos = $fechaHora->format('i');
-
-                // Concatena las horas y minutos en un formato deseado (por ejemplo, "hh:mm")
-                $horarioFinal = $horas . ":" . $minutos;
-                return response()->json($horarioFinal);
+            if ($sub === 'Ingresos') {
+                $result = DB::select("
+                    SELECT HOUR(HoraIngreso) AS Hora, COUNT(*) AS Cantidad
+                    FROM ingresos
+                    WHERE MONTH(FechaIngreso) = MONTH(CURDATE()) AND YEAR(FechaIngreso) = YEAR(CURDATE())
+                    GROUP BY HOUR(HoraIngreso)
+                    ORDER BY COUNT(*) DESC
+                    LIMIT 1
+                ");
+            
+                if (!empty($result)) {
+                    // Obtiene el resultado de la consulta
+                    $hora = $result[0]->Hora;
+            
+                    // Formatea la hora en el formato deseado
+                    $horarioFinal = str_pad($hora, 2, "0", STR_PAD_LEFT) . ":00";
+            
+                    return response()->json($horarioFinal);
+                } else {
+                    // Si no se encontraron registros
+                    return response()->json("No hay registros para el mes actual");
+                }
             }
 
         }
