@@ -139,5 +139,12 @@ class UsuariosController extends Controller
         }
         
     }    
+    public function checkServerStatus()
+    {
+        return response()->json([
+            "status" => "online",
+            "message" => "El servidor está en línea."
+        ]);
+    }
 }
 

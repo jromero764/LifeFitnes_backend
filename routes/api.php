@@ -18,6 +18,7 @@ Route::post('/ChangePassword', [UsuariosController::class, 'ChangePassword']);
 Route::get('/Usuarios/{ci}', [UsuariosController::class, 'show']);
 Route::patch('/Usuarios/{ci}', [UsuariosController::class, 'update']);
 Route::delete('/Usuarios/{ci}', [UsuariosController::class, 'destroy']);
+Route::get('/Usuarios/checkServer', [UsuariosController::class, 'checkServerStatus']);
 //INGRESOS-------------------------------------------------------------------------------------------------------------------------->
 Route::post('/Ingresos', [IngresosController::class, 'Login']);
 Route::get('/Ingresos/{ci}', [IngresosController::class, 'show']);

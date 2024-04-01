@@ -62,11 +62,11 @@ class EstadisticasController extends Controller
                 $result = DB::select("
                     SELECT HOUR(HoraIngreso) AS Hora, COUNT(*) AS Cantidad
                     FROM ingresos
-                    WHERE MONTH(FechaIngreso) = MONTH(CURDATE()) AND YEAR(FechaIngreso) = YEAR(CURDATE())
                     GROUP BY HOUR(HoraIngreso)
                     ORDER BY COUNT(*) DESC
                     LIMIT 1
-                ");
+                    ");
+                   // WHERE MONTH(FechaIngreso) = MONTH(CURDATE()) AND YEAR(FechaIngreso) = YEAR(CURDATE())
             
                 if (!empty($result)) {
                     // Obtiene el resultado de la consulta
