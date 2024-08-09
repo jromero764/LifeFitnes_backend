@@ -105,7 +105,7 @@ class UsuariosController extends Controller
             
         ]);
     }
-
+//hago cambio
     function AltaDeAdministrador($id,$password){
     $Administrador = new Administradores();
     $Administrador->id_usuarios=$id;
