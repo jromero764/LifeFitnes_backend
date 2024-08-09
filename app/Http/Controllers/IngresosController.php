@@ -34,6 +34,7 @@ class IngresosController extends Controller
                         if($DiasDeCuota<1){
                             return response()->json(false);
                         }
+
                         //Realiza el registro del ingreso
                         $this->RegistroDeIngreso($findClient->id);
                         return response()->json([
@@ -73,11 +74,6 @@ class IngresosController extends Controller
         $Ingreso->save();
     }
 
-    // $Ingresos=DB::table('ingresos')
-    //     ->join('usuarios','ingresos.usuarios_ci','=','usuarios.ci')
-    //     ->select('usuarios_ci','HoraIngreso','FechaIngreso','Nombre','Apellido')
-    //     ->where('ingresos.usuarios_ci','=',$ci)
-    //     ->get();
     public function show($ci)
     {
         //
@@ -90,17 +86,9 @@ class IngresosController extends Controller
                     ->select('id','HoraIngreso','FechaIngreso')
                     ->where('id_clientes','=',$idCliente)
                     ->get();
-                    
-           // dd('esto es la respuesta de ingresos',$Ingresos);
             return response()->json($Ingresos);
         }
-        // 
         }
-        // $Ingresos=DB::table('ingresos')
-        // ->join('usuarios','ingresos.usuarios_ci','=','usuarios.ci')
-        // ->select('usuarios_ci','HoraIngreso','FechaIngreso','Nombre','Apellido')
-        // ->paginate(10);
-        // return response()->json($Ingresos);
 
     }
 
