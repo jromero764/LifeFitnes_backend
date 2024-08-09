@@ -15,74 +15,80 @@ class IngresosController extends Controller
 {
     public function Login(request $request){
         //<----------------------------------------PERFIL SOCIO------------------------------------------------------->//
-                $Cliente=Clientes::where('usuarios_ci',$request->ci)->first();
-                if($Cliente!=null){
+                $findUser=Usuarios::where('ci',$request->ci)->first();
+                if($findUser){
+                $findClient=Clientes::where('id_usuarios',$findUser->id)->first();
+                if($findClient!=null){
                     //Se calcula cuantos dias de cuota le queda y retorna
-                    $Cuota=DB::table('transacciones')
-                    ->where('socios_ci','=',$request->ci)
-                    ->latest()
-                    ->first();
-                    if(empty($Cuota)){return response()->json(false);}
-                    $FechaActual = Carbon::now();
-                    $FechaHabilitado = Carbon::parse($Cuota->FechaTransaccion);
-                    $DiasDeCuota = $FechaActual->diffInDays($FechaHabilitado);
-                    $DiasDeCuota = 30-$DiasDeCuota;
-    
-                    if($DiasDeCuota<1){
-                        return response()->json(false);
-                    }
-                    //Realiza el registro del ingreso
-                    $this->RegistroDeIngreso($request->ci);
-                    return response()->json([
-                        "Nombre"=>$Cliente->Usuarios->Nombre,
-                        "Apellido"=>$Cliente->Usuarios->Apellido,
-                        "DiasDeCuota"=>$DiasDeCuota]);
-                }
-                //<----------------------------------------PERFIL ADMINISTRADOR------------------------------------------------------->//
-                $Administrador=Administradores::where('usuarios_ci',$request->ci)->first();
-                if($Administrador!=null){
-                    //Aca se chequeo que es admin y devuelve true
-                    if($request->Administrador==true){
-                                if(password_verify($request->password,$Administrador->password)){
-                                    return response()->json(["respuesta"    => 'Se valida el ingreso']);
-                                }
-                                return response()->json(["respuesta"    => 'Contraseña incorrecta']);
+                     
+                        $Cuota=DB::table('transacciones')
+                        ->where('id_clientes','=',$findClient->id)
+                        ->latest()
+                        ->first();
+                        if(empty($Cuota)){return response()->json(false);}
+                        $FechaActual = Carbon::now();
+                        $FechaHabilitado = Carbon::parse($Cuota->FechaTransaccion);
+                        $DiasDeCuota = $FechaActual->diffInDays($FechaHabilitado);
+                        $DiasDeCuota = 30-$DiasDeCuota;
+        
+                        if($DiasDeCuota<1){
+                            return response()->json(false);
                         }
+
+                        //Realiza el registro del ingreso
+                        $this->RegistroDeIngreso($findClient->id);
+                        return response()->json([
+                            "Nombre"=>$findUser->Nombre,
+                            "Apellido"=>$findUser->Apellido,
+                            "DiasDeCuota"=>$DiasDeCuota]);
+                }else{
+                    $Administrador=Administradores::where('id_usuarios',$findUser->id)->first();
+                    if($request->Administrador==true){
+                        if(password_verify($request->password,$Administrador->password)){
+                            return response()->json(["respuesta"    => 'Se valida el ingreso',"Usuario"=>$Administrador,"Perfil"=>$findUser]);
+                        }
+                        return response()->json(["respuesta"    => 'Contraseña incorrecta']);
+                }
 
                     return response()->json(["respuesta"    => true]);
                 }
+                }
+                
+                //<----------------------------------------PERFIL ADMINISTRADOR------------------------------------------------------->//
+                
+                    //Aca se chequeo que es admin y devuelve true
+                    
+                
         //Se valido que la cedula ingresada no pertenece a usuario ni administrador
         return response()->json(["respuesta"    => 'Usuario no existe']);
        }
 
-    public function RegistroDeIngreso($ci)
+    public function RegistroDeIngreso($id)
     {
         
         $Ingreso=new Ingresos();
-        $Ingreso->usuarios_ci=$ci;
+        $Ingreso->id_clientes=$id;
         $Ingreso->HoraIngreso=Carbon::now()->format('H:i:s');
         $Ingreso->FechaIngreso=Carbon::now()->format('Y:m:d');
 
         $Ingreso->save();
     }
 
-    
     public function show($ci)
     {
         //
         if($ci!=0){
-        $Ingresos=DB::table('ingresos')
-        ->join('usuarios','ingresos.usuarios_ci','=','usuarios.ci')
-        ->select('usuarios_ci','HoraIngreso','FechaIngreso','Nombre','Apellido')
-        ->where('ingresos.usuarios_ci','=',$ci)
-        ->get();
-        return response()->json($Ingresos);
+        $idCliente = Clientes::whereHas('usuario', function ($query) use ($ci) {
+                $query->where('ci', $ci);
+                })->value('id');
+                if($idCliente!=null){
+                    $Ingresos=DB::table('ingresos')
+                    ->select('id','HoraIngreso','FechaIngreso')
+                    ->where('id_clientes','=',$idCliente)
+                    ->get();
+            return response()->json($Ingresos);
         }
-        $Ingresos=DB::table('ingresos')
-        ->join('usuarios','ingresos.usuarios_ci','=','usuarios.ci')
-        ->select('usuarios_ci','HoraIngreso','FechaIngreso','Nombre','Apellido')
-        ->paginate(10);
-        return response()->json($Ingresos);
+        }
 
     }
 

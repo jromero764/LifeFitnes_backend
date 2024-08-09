@@ -18,6 +18,7 @@ Route::post('/ChangePassword', [UsuariosController::class, 'ChangePassword']);
 Route::get('/Usuarios/{ci}', [UsuariosController::class, 'show']);
 Route::patch('/Usuarios/{ci}', [UsuariosController::class, 'update']);
 Route::delete('/Usuarios/{ci}', [UsuariosController::class, 'destroy']);
+Route::get('/Usuarios/checkServer', [UsuariosController::class, 'checkServerStatus']);
 //INGRESOS-------------------------------------------------------------------------------------------------------------------------->
 Route::post('/Ingresos', [IngresosController::class, 'Login']);
 Route::get('/Ingresos/{ci}', [IngresosController::class, 'show']);
@@ -33,5 +34,6 @@ Route::post('/Transacciones', [TransaccionesController::class, 'create']);
 Route::get('/Transacciones/{string}/{date}', [TransaccionesController::class, 'show']);
 Route::get('/Cuotas/{ci}', [TransaccionesController::class, 'ConsultarCuotas']);
 Route::delete('/Transacciones/{id}', [TransaccionesController::class, 'destroy']);
+Route::get('/deshabilitarUsuariosCuotaVencida', [TransaccionesController::class, 'deshabilitarUsuariosCuotaVencida']);
 //ESTADISTICAS-------------------------------------------------------------------------------------------------------------------------->
 Route::get('/Estadisticas/{Opcion}/{sub}', [EstadisticasController::class, 'show']);
