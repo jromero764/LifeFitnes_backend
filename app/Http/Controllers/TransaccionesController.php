@@ -24,10 +24,12 @@ class TransaccionesController extends Controller
             $Transaccion->FechaTransaccion=Carbon::now()->format('Y:m:d');
             $Transaccion->TipoDeTransaccion=$request->TipoDeTransaccion;
             $Transaccion->save();
-            $Cuota=Usuarios::where('ci','=',$request->ci_cliente)
+
+            Usuarios::where('ci','=',$request->ci_cliente)
             ->update([
                 'estado' => 1
             ]);
+
         }else{
             //Registro del resto de las transacciones
             $id_cliente=null;
