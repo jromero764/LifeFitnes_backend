@@ -35,5 +35,6 @@ Route::get('/Transacciones/{string}/{date}', [TransaccionesController::class, 's
 Route::get('/Cuotas/{ci}', [TransaccionesController::class, 'ConsultarCuotas']);
 Route::delete('/Transacciones/{id}', [TransaccionesController::class, 'destroy']);
 Route::get('/deshabilitarUsuariosCuotaVencida', [TransaccionesController::class, 'deshabilitarUsuariosCuotaVencida']);
+
 //ESTADISTICAS-------------------------------------------------------------------------------------------------------------------------->
 Route::get('/Estadisticas/{Opcion}/{sub}', [EstadisticasController::class, 'show']);

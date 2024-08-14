@@ -79,7 +79,7 @@ class ProductosController extends Controller
         if(empty($Cuota)){return response()->json(["Respuesta"    => "Usuario sin cuota"]);}
         return response()->json($Cuota);
     }
-    public function ConsultarProducto(){
+    public function ConsultarProducto($ci){
         $Cuota = DB::table('productos')
         ->Join('cuotas','productos_id','=','id')
         ->where('usuarios_ci','=',$ci)

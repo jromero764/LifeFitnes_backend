@@ -18,6 +18,7 @@ class IngresosController extends Controller
                 $findUser=Usuarios::where('ci',$request->ci)->first();
                 if($findUser){
                 $findClient=Clientes::where('id_usuarios',$findUser->id)->first();
+                
                 if($findClient!=null){
                     //Se calcula cuantos dias de cuota le queda y retorna
                      
@@ -26,6 +27,7 @@ class IngresosController extends Controller
                         ->latest()
                         ->first();
                         if(empty($Cuota)){return response()->json(false);}
+
                         $FechaActual = Carbon::now();
                         $FechaHabilitado = Carbon::parse($Cuota->FechaTransaccion);
                         $DiasDeCuota = $FechaActual->diffInDays($FechaHabilitado);

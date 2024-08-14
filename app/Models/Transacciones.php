@@ -10,7 +10,7 @@ class Transacciones extends Model
     use HasFactory;
     public function cliente()
     {
-        return $this->belongsTo(Clientes::class, 'id_clientes');
+        return $this->belongsTo(Clientes::class, 'id_cliente', 'id');
     }
 
     public function administrador()
