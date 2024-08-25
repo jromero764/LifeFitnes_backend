@@ -4,14 +4,16 @@ namespace App\Console;
 
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
-use App\Models\Usuario;
-use Carbon\Carbon;
+
 
 class Kernel extends ConsoleKernel
 {
     protected $commands = [
         \App\Console\Commands\ActualizarEstadoUsuarios::class,
     ];
+
+    #\App\Console\Commands\MensajeLogs::class,
+
     /**
      * Define the application's command schedule.
      *
@@ -21,8 +23,9 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
 
-        // $schedule->command('estado:usuarios')->everyMinute();
-        $schedule->command('estado:usuarios')->dailyAt('06:00');
+        #$schedule->command('log:mensaje')->hourly();
+        #$schedule->command('estado:usuarios')->everyMinute();
+        $schedule->command('estado:usuarios')->dailyAt('23:20');
     }
 
     /**

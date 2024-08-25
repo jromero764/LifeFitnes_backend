@@ -152,4 +152,60 @@ class TransaccionesController extends Controller
             }
         }
     }
+
+    public function VerData()
+    {
+
+        $fechaFiltro = Carbon::now()->subDays(30)->format('Y-m-d');
+
+        $arrayUsuarios = Usuarios::select('usuarios.id', 'usuarios.ci', 'usuarios.estado', 'clientes.id_usuarios', 'trans.FechaTransaccion')
+            ->join('clientes', 'usuarios.id', '=', 'clientes.id_usuarios')
+            ->join(DB::raw("(SELECT id_clientes, MAX(FechaTransaccion) as FechaTransaccion 
+                     FROM transacciones
+                     WHERE productos_id = 1
+                     GROUP BY id_clientes
+                     HAVING FechaTransaccion <='$fechaFiltro') as trans"), 'clientes.id', '=', 'trans.id_clientes')
+            ->where('usuarios.estado', 1)
+            ->get();
+
+        $arrayCount = Usuarios::select('usuarios.id', 'usuarios.ci', 'usuarios.estado', 'clientes.id_usuarios', 'trans.FechaTransaccion')
+            ->join('clientes', 'usuarios.id', '=', 'clientes.id_usuarios')
+            ->join(DB::raw("(SELECT id_clientes, MAX(FechaTransaccion) as FechaTransaccion 
+                     FROM transacciones
+                     WHERE productos_id = 1
+                     GROUP BY id_clientes
+                     HAVING FechaTransaccion <='$fechaFiltro') as trans"), 'clientes.id', '=', 'trans.id_clientes')
+            ->where('usuarios.estado', 1)
+            ->count();
+
+        $arrayCountORIGINAL = Usuarios::select('usuarios.id', 'usuarios.ci', 'usuarios.estado', 'clientes.id_usuarios', 'trans.FechaTransaccion')
+            ->join('clientes', 'usuarios.id', '=', 'clientes.id_usuarios')
+            ->join(DB::raw("(SELECT id_clientes, MAX(FechaTransaccion) as FechaTransaccion 
+                     FROM transacciones
+                     WHERE productos_id = 1
+                     GROUP BY id_clientes
+                     HAVING FechaTransaccion <='$fechaFiltro') as trans"), 'clientes.id', '=', 'trans.id_clientes')
+            ->where('usuarios.estado', 1)
+            ->count();
+
+        $array = Usuarios::select('usuarios.id', 'usuarios.ci', 'usuarios.estado', 'clientes.id_usuarios', 'trans.FechaTransaccion')
+            ->join('clientes', 'usuarios.id', '=', 'clientes.id_usuarios')
+            ->join(DB::raw("(SELECT id_clientes, MAX(FechaTransaccion) as FechaTransaccion 
+                     FROM transacciones
+                     WHERE productos_id = 1
+                     GROUP BY id_clientes
+                     HAVING FechaTransaccion <='$fechaFiltro') as trans"), 'clientes.id', '=', 'trans.id_clientes')
+            ->where('usuarios.estado', 1)
+            ->pluck('usuarios.id')
+            ->toArray();
+
+
+        return response()->json([
+            "FECHA FILTRO" => $fechaFiltro,
+            "total New" => $arrayCount,
+            "total Ori" => $arrayCountORIGINAL,
+            "arrayUsuarios" => $arrayUsuarios,
+            "dataArray" => $array
+        ]);
+    }
 }
