@@ -21,73 +21,76 @@ class IngresosController extends Controller
             $findClient = Clientes::where('id_usuarios', $findUser->id)->first();
 
             if ($findClient != null) {
+
                 //Se calcula cuantos dias de cuota le queda y retorna
 
-                $Cuotas = Transacciones::where('id_clientes', '=', $findClient->id) // ULTIMAS 2
+                $Cuotas = Transacciones::where('id_clientes', '=', $findClient->id) //* ULTIMAS 2 CUOTAS
                     ->orderBy('FechaTransaccion', 'desc')
-                    ->limit(2)  // Obtener las dos últimas transacciones
+                    ->limit(2)
                     ->get();
 
                 if ($Cuotas->isEmpty()) {
                     return response()->json(false);
                 }
 
-                if ($Cuotas[0]->productos_id == 1) {
-                    $plan = 30;
-                } elseif ($Cuotas[0]->productos_id == 15) {
-                    $plan = 60;
-                } else {
-                    $plan = 90;
-                }
+                $ultimaCuota = $Cuotas->first();
 
-
-                $ultimaCuota = $Cuotas->first();  // Última transacción
-
-                // Verificar si existe una anteúltima cuota
                 $anteultimaCuota = $Cuotas->skip(1)->first();
 
-                $FechaActual = Carbon::now();
-                $FechaHabilitado = Carbon::parse($ultimaCuota->FechaTransaccion); // Última transacción
+
+                $fechaVencimiento = null;
+                $diferenciaDias = null;
+                $DiasDeCuota = null;
 
                 if ($anteultimaCuota) {
-                    // Si hay una anteúltima cuota, calcular la fecha esperada y los días restantes
-                    $FechaEsperada = Carbon::parse($anteultimaCuota->FechaTransaccion)->addDays($plan); // Fecha esperada de pago (30 días después de la anteúltima)
+                    $fechaVencimiento = Carbon::parse($anteultimaCuota->FechaTransaccion)->addDays(30);
+                    $diferenciaDias = Carbon::parse($ultimaCuota->FechaTransaccion)->diffInDays($fechaVencimiento, false);
+                }
 
-                    // Calcular la diferencia de días
-                    $DiasDeCuota = $FechaActual->diffInDays($FechaHabilitado); // Días entre la última transacción y la fecha actual
-                    $DiasDeCuota = $plan - $DiasDeCuota; // Días restantes antes de completar los 30 días
+                //* 2) SOLO EXISTE UNA CUOTA O HAY MAS DE 30 DIAS DE DIFERENCIA ENTRE AMBAS
+                if (!$anteultimaCuota || Carbon::parse($ultimaCuota->FechaTransaccion)->diffInDays(Carbon::parse($anteultimaCuota->FechaTransaccion)) > 30) {
 
-                    // Verificar si el cliente pagó anticipado
-                    if ($ultimaCuota->FechaTransaccion < $FechaEsperada) {
-                        $diasAnticipados = $FechaEsperada->diffInDays($ultimaCuota->FechaTransaccion);
-                        $DiasDeCuota += $diasAnticipados; // Sumar los días a favor
-                    }
-                    if ($DiasDeCuota < $plan) {
-                        $DiasDeCuota = $plan;
-                    }
-                } else {
-                    // Si no hay anteúltima cuota, asignar un valor predeterminado
                     $FechaActual = Carbon::now();
                     $FechaHabilitado = Carbon::parse($ultimaCuota->FechaTransaccion);
-                    $DiasDeCuota = $FechaActual->diffInDays($FechaHabilitado);
-                    $DiasDeCuota = $plan - $DiasDeCuota;
+                    $FechaVencimiento = $FechaHabilitado->copy()->addDays(30);
+                    $DiasDeCuota = $FechaActual->diffInDays($FechaVencimiento, false);
+
+                    //! 1) CUOTA VENCIDA
+                    if ($DiasDeCuota < 1) {
+                        return response()->json(false);
+                    }
+
+                    return response()->json([
+                        'CASO 1 CUOTA o MAS DE 30 DIAS DE DIFERENCIA' => !$anteultimaCuota ? 'SOLO HAY UNA CUOTA' : 'HAY MÁS DE 30 DÍAS DE DIFERENCIA ENTRE AMBAS CUOTAS',
+                        'anteultimaCuota' => $anteultimaCuota ? $anteultimaCuota->FechaTransaccion : null,
+                        'vencido' => $fechaVencimiento ? $fechaVencimiento->toDateString() : null,
+                        'ultimaCuota' => $ultimaCuota->FechaTransaccion,
+                        'proximoVencimiento' => $FechaHabilitado->addDays(29)->toDateString(),
+                        'diferenciaDias' => $diferenciaDias,
+                        'DiasDeCuota' => $DiasDeCuota,
+                        'Nombre' => $findUser->Nombre,
+                        'Apellido' => $findUser->Apellido,
+                    ]);
                 }
 
-                if ($DiasDeCuota < 1) {
-                    return response()->json(false);
-                }
-
-                // Realiza el registro del ingreso
-                $this->RegistroDeIngreso($findClient->id);
-
+                //? 3) HAY 2 CUOTAS CON 30 DIAS O MENOS DE DIFERENCIA
                 return response()->json([
-                    "Nombre" => $findUser->Nombre,
-                    "Apellido" => $findUser->Apellido,
-                    "DiasDeCuota" => $DiasDeCuota
-
+                    'CASO 2 CUOTAS CON PAGO ANTICIPADO' => true,
+                    'anteultimaCuota' => $anteultimaCuota->FechaTransaccion,
+                    'vencido' => $fechaVencimiento ? $fechaVencimiento->toDateString() : null,
+                    'ultimaCuota' => $ultimaCuota->FechaTransaccion,
+                    'diferenciaDias' => $diferenciaDias,
+                    'DiasDeCuota' => 30 + $diferenciaDias,
+                    'proximoVencimiento' => Carbon::parse($ultimaCuota->FechaTransaccion)
+                        ->addDays(30 + $diferenciaDias)
+                        ->toDateString(),
+                    'Nombre' => $findUser->Nombre,
+                    'Apellido' => $findUser->Apellido,
                 ]);
             } else {
+
                 $Administrador = Administradores::where('id_usuarios', $findUser->id)->first();
+
                 if ($request->Administrador == true) {
                     if (password_verify($request->password, $Administrador->password)) {
                         return response()->json(["respuesta"    => 'Se valida el ingreso', "Usuario" => $Administrador, "Perfil" => $findUser]);
