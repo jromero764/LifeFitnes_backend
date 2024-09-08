@@ -18,76 +18,46 @@ class IngresosController extends Controller
         //<----------------------------------------PERFIL SOCIO------------------------------------------------------->//
         $findUser = Usuarios::where('ci', $request->ci)->first();
         if ($findUser) {
+
+            // Encuentra el cliente relacionado
             $findClient = Clientes::where('id_usuarios', $findUser->id)->first();
 
-            if ($findClient != null) {
+            if ($findClient) {
+                // Obtiene el campo vencimiento_pase
+                $vencimiento_pase = $findClient->vencimiento_pase;
 
-                //Se calcula cuantos dias de cuota le queda y retorna
-
-                $Cuotas = Transacciones::where('id_clientes', '=', $findClient->id) //* ULTIMAS 2 CUOTAS
-                    ->orderBy('FechaTransaccion', 'desc')
-                    ->limit(2)
-                    ->get();
-
-                if ($Cuotas->isEmpty()) {
+                // Si vencimiento_pase está vacío, responde con falso
+                if (!$vencimiento_pase) {
                     return response()->json(false);
                 }
 
-                $ultimaCuota = $Cuotas->first();
+                // Calcula la fecha de vencimiento y la fecha actual
+                $fechaVencimiento = Carbon::parse($vencimiento_pase)->startOfDay();
+                $fechaActual = Carbon::now()->startOfDay();
 
-                $anteultimaCuota = $Cuotas->skip(1)->first();
+                // Calcula la diferencia en días
+                $DiasDeCuota = $fechaActual->diffInDays($fechaVencimiento, false);
 
-
-                $fechaVencimiento = null;
-                $diferenciaDias = null;
-                $DiasDeCuota = null;
-
-                if ($anteultimaCuota) {
-                    $fechaVencimiento = Carbon::parse($anteultimaCuota->FechaTransaccion)->addDays(30);
-                    $diferenciaDias = Carbon::parse($ultimaCuota->FechaTransaccion)->diffInDays($fechaVencimiento, false);
+                // Verifica si la fecha de vencimiento ha pasado
+                if ($DiasDeCuota < 1) {
+                    return response()->json(false);
                 }
 
-                //* 2) SOLO EXISTE UNA CUOTA O HAY MAS DE 30 DIAS DE DIFERENCIA ENTRE AMBAS
-                if (!$anteultimaCuota || Carbon::parse($ultimaCuota->FechaTransaccion)->diffInDays(Carbon::parse($anteultimaCuota->FechaTransaccion)) > 30) {
+                //Realiza el registro del ingreso
+                $this->RegistroDeIngreso($findClient->id);
 
-                    $FechaActual = Carbon::now();
-                    $FechaHabilitado = Carbon::parse($ultimaCuota->FechaTransaccion);
-                    $FechaVencimiento = $FechaHabilitado->copy()->addDays(30);
-                    $DiasDeCuota = $FechaActual->diffInDays($FechaVencimiento, false);
-
-                    //! 1) CUOTA VENCIDA
-                    if ($DiasDeCuota < 1) {
-                        return response()->json(false);
-                    }
-
-                    return response()->json([
-                        'CASO 1 CUOTA o MAS DE 30 DIAS DE DIFERENCIA' => !$anteultimaCuota ? 'SOLO HAY UNA CUOTA' : 'HAY MÁS DE 30 DÍAS DE DIFERENCIA ENTRE AMBAS CUOTAS',
-                        'anteultimaCuota' => $anteultimaCuota ? $anteultimaCuota->FechaTransaccion : null,
-                        'vencido' => $fechaVencimiento ? $fechaVencimiento->toDateString() : null,
-                        'ultimaCuota' => $ultimaCuota->FechaTransaccion,
-                        'proximoVencimiento' => $FechaHabilitado->addDays(29)->toDateString(),
-                        'diferenciaDias' => $diferenciaDias,
-                        'DiasDeCuota' => $DiasDeCuota,
-                        'Nombre' => $findUser->Nombre,
-                        'Apellido' => $findUser->Apellido,
-                    ]);
-                }
-
-                //? 3) HAY 2 CUOTAS CON 30 DIAS O MENOS DE DIFERENCIA
+                // Responde con la información de vencimiento
                 return response()->json([
-                    'CASO 2 CUOTAS CON PAGO ANTICIPADO' => true,
-                    'anteultimaCuota' => $anteultimaCuota->FechaTransaccion,
-                    'vencido' => $fechaVencimiento ? $fechaVencimiento->toDateString() : null,
-                    'ultimaCuota' => $ultimaCuota->FechaTransaccion,
-                    'diferenciaDias' => $diferenciaDias,
-                    'DiasDeCuota' => 30 + $diferenciaDias,
-                    'proximoVencimiento' => Carbon::parse($ultimaCuota->FechaTransaccion)
-                        ->addDays(30 + $diferenciaDias)
-                        ->toDateString(),
+                    "vencimiento_pase" => $fechaVencimiento->format('Y-m-d'),
+                    "hoy" => $fechaActual->format('Y-m-d'),
+                    'DiasDeCuota' => $DiasDeCuota,
                     'Nombre' => $findUser->Nombre,
                     'Apellido' => $findUser->Apellido,
+                    'mensaje' => "El pase está vigente. Quedan $DiasDeCuota días para el vencimiento."
                 ]);
             } else {
+                //<----------------------------------------PERFIL ADMINISTRADOR------------------------------------------------------->//
+                //Aca se chequeo que es admin y devuelve true
 
                 $Administrador = Administradores::where('id_usuarios', $findUser->id)->first();
 
@@ -101,11 +71,6 @@ class IngresosController extends Controller
                 return response()->json(["respuesta"    => true]);
             }
         }
-
-        //<----------------------------------------PERFIL ADMINISTRADOR------------------------------------------------------->//
-
-        //Aca se chequeo que es admin y devuelve true
-
 
         //Se valido que la cedula ingresada no pertenece a usuario ni administrador
         return response()->json(["respuesta"    => 'Usuario no existe']);

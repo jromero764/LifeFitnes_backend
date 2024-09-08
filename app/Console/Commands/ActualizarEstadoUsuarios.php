@@ -15,30 +15,26 @@ class ActualizarEstadoUsuarios extends Command
 
     public function handle()
     {
-        $fechaFiltro = Carbon::now()->subDays(30)->format('Y-m-d');
+        $HOY = Carbon::now()->subDays(1)->format('Y-m-d');
 
-        $array = Usuarios::select('usuarios.id', 'usuarios.ci', 'usuarios.estado', 'clientes.id_usuarios', 'trans.FechaTransaccion')
-            ->join('clientes', 'usuarios.id', '=', 'clientes.id_usuarios')
-            ->join(DB::raw("(SELECT id_clientes, MAX(FechaTransaccion) as FechaTransaccion 
-                     FROM transacciones
-                     WHERE productos_id = 1
-                     GROUP BY id_clientes
-                     HAVING MAX(FechaTransaccion) <= '$fechaFiltro') as trans"), 'clientes.id', '=', 'trans.id_clientes')
-            ->where('usuarios.estado', 1)
-            ->pluck('usuarios.id')
+        $array =
+            Usuarios::join('clientes', 'usuarios.id', '=', 'clientes.id_usuarios')
+            ->where(function ($query) use ($HOY) {
+                $query->where('clientes.vencimiento_pase', '<', $HOY) // Filtra por vencimiento anterior a hoy
+                    ->orWhereNull('clientes.vencimiento_pase');     // Incluye filas donde vencimiento_pase es NULL
+            })
+            ->pluck('clientes.id_usuarios')
             ->toArray();
 
-        $arrayCount = Usuarios::select('usuarios.id', 'usuarios.ci', 'usuarios.estado', 'clientes.id_usuarios', 'trans.FechaTransaccion')
-            ->join('clientes', 'usuarios.id', '=', 'clientes.id_usuarios')
-            ->join(DB::raw("(SELECT id_clientes, MAX(FechaTransaccion) as FechaTransaccion 
-                     FROM transacciones
-                     WHERE productos_id = 1
-                     GROUP BY id_clientes
-                     HAVING MAX(FechaTransaccion) <= '$fechaFiltro') as trans"), 'clientes.id', '=', 'trans.id_clientes')
-            ->where('usuarios.estado', 1)
-            ->pluck('usuarios.id')
+        $arrayCount = Usuarios::join('clientes', 'usuarios.id', '=', 'clientes.id_usuarios')
+            ->where(function ($query) use ($HOY) {
+                $query->where('clientes.vencimiento_pase', '<', $HOY) // Filtra por vencimiento anterior a hoy
+                    ->orWhereNull('clientes.vencimiento_pase');     // Incluye filas donde vencimiento_pase es NULL
+            })
+            ->pluck('clientes.id_usuarios')
             ->count();
 
+        //! descomentar para actualiza la base de datos
         Usuarios::whereIn('id', $array)->update(['estado' => 0]);
 
         Log::info('Se actualizó el estado de ' . $arrayCount . ' usuarios correctamente');

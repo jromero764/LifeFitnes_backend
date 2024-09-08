@@ -44,3 +44,5 @@ Route::get('/Estadisticas/{Opcion}/{sub}', [EstadisticasController::class, 'show
 
 //Pruebas endpoint-------------------------------------------------------------------------------------------------------------------------->
 Route::get('/VerData', [TransaccionesController::class, 'VerData']);
+Route::get('/VerData2', [TransaccionesController::class, 'VerData2']);
+Route::get('/VerData3', [TransaccionesController::class, 'VerData3']);
