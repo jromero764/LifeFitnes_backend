@@ -24,8 +24,8 @@ class Kernel extends ConsoleKernel
     {
 
         #$schedule->command('log:mensaje')->hourly();
-        #$schedule->command('estado:usuarios')->everyMinute();
-        $schedule->command('estado:usuarios')->dailyAt('23:20');
+        $schedule->command('estado:usuarios')->everyMinute();
+        // $schedule->command('estado:usuarios')->dailyAt('23:20');
     }
 
     /**

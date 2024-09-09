@@ -35,7 +35,7 @@ class ActualizarEstadoUsuarios extends Command
             ->count();
 
         //! descomentar para actualiza la base de datos
-        Usuarios::whereIn('id', $array)->update(['estado' => 0]);
+        //Usuarios::whereIn('id', $array)->update(['estado' => 0]);
 
         Log::info('Se actualizó el estado de ' . $arrayCount . ' usuarios correctamente');
         // Log::info( $arrayCount . ''. $array);

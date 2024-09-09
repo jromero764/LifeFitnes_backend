@@ -31,18 +31,21 @@ class ProductosController extends Controller
 
     public function show($id)
     {
-        //
         if ($id != 0) {
             $Productos = DB::table('productos')
                 ->where('productos.id', '=', $id)
                 ->first();
+
             return response()->json($Productos);
         }
+
         $Productos = DB::table('productos')
             ->orderBy('Nombre', 'asc')
-            ->paginate(10);
+            ->paginate(100);
+
         return response()->json($Productos);
     }
+
     public function update(Request $request, $idProducto)
     {
         //
@@ -68,6 +71,7 @@ class ProductosController extends Controller
         //
         $Producto = Productos::findOrFail($idProducto);
         $Producto->delete();
+
         return response()->json([
             "codigo"    => "200",
             "respuesta" => "Se elimino el producto con exito",
@@ -80,9 +84,12 @@ class ProductosController extends Controller
             ->Join('cuotas', 'productos_id', '=', 'id')
             ->where('usuarios_ci', '=', $ci)
             ->first();
+
         if (empty($Cuota)) {
+
             return response()->json(["Respuesta"    => "Usuario sin cuota"]);
         }
+
         return response()->json($Cuota);
     }
 
@@ -92,9 +99,12 @@ class ProductosController extends Controller
             ->Join('cuotas', 'productos_id', '=', 'id')
             ->where('usuarios_ci', '=', $ci)
             ->first();
+
         if (empty($Cuota)) {
+
             return response()->json(["Respuesta"    => "Usuario sin cuota"]);
         }
+
         return response()->json($Cuota);
     }
 
@@ -106,10 +116,13 @@ class ProductosController extends Controller
                 ->update([
                     'Stock' => $Producto->Stock - $cantidad
                 ]);
+
             return true;
         }
+
         return response()->json("Producto sin Stock");
     }
+
     public function CompraStock($id, $cantidad)
     {
         $Producto = Productos::findOrFail($id);
@@ -117,6 +130,7 @@ class ProductosController extends Controller
             ->update([
                 'Stock' => $Producto->Stock + $cantidad
             ]);
+
         return true;
     }
 }

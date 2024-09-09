@@ -303,7 +303,7 @@ class TransaccionesController extends Controller
     public function VerData2()
     {
 
-        //! toma la ultima transaccion cuota=1 de cada cliente
+        //! toma la ultima transaccion cuota=30 de cada cliente
         $clientesCuota =
             Transacciones::select('transacciones.id_clientes', 'transacciones.productos_id', 'transacciones.FechaTransaccion')
             ->join(
@@ -338,15 +338,15 @@ class TransaccionesController extends Controller
 
         //!carga la columna vencimiento_pase en la tabla clientes con la fecha de vencimiento de la ultima cuota paga(descomentar para ejecutar) 
         // Itera sobre los resultados y actualiza la tabla Clientes
-        // foreach ($clientesCuota as $cliente) {
-        //     // Calcula la nueva fecha de vencimiento sumando 30 días
-        //     $nuevaFechaVencimiento = Carbon::parse($cliente->FechaTransaccion)->addDays(29);
+        foreach ($clientesCuota as $cliente) {
+            // Calcula la nueva fecha de vencimiento sumando 30 días
+            $nuevaFechaVencimiento = Carbon::parse($cliente->FechaTransaccion)->addDays(29);
 
-        //     // Actualiza la tabla Clientes con la nueva fecha de vencimiento
-        //     DB::table('clientes')
-        //         ->where('id', $cliente->id_clientes)
-        //         ->update(['vencimiento_pase' => $nuevaFechaVencimiento]);
-        // }
+            // Actualiza la tabla Clientes con la nueva fecha de vencimiento
+            DB::table('clientes')
+                ->where('id', $cliente->id_clientes)
+                ->update(['vencimiento_pase' => $nuevaFechaVencimiento]);
+        }
 
 
         return response()->json([
