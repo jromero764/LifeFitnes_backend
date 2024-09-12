@@ -20,24 +20,32 @@ class ActualizarEstadoUsuarios extends Command
         $array =
             Usuarios::join('clientes', 'usuarios.id', '=', 'clientes.id_usuarios')
             ->where(function ($query) use ($HOY) {
-                $query->where('clientes.vencimiento_pase', '<', $HOY) // Filtra por vencimiento anterior a hoy
-                    ->orWhereNull('clientes.vencimiento_pase');     // Incluye filas donde vencimiento_pase es NULL
+                $query->where('clientes.vencimiento_pase', '<', $HOY)
+                    ->orWhereNull('clientes.vencimiento_pase');
             })
             ->pluck('clientes.id_usuarios')
             ->toArray();
 
-        $arrayCount = Usuarios::join('clientes', 'usuarios.id', '=', 'clientes.id_usuarios')
+        $arrayCount = Usuarios::join('clientes', 'usuarios.id', '=', 'clientes.id_usuarios') //120
             ->where(function ($query) use ($HOY) {
-                $query->where('clientes.vencimiento_pase', '<', $HOY) // Filtra por vencimiento anterior a hoy
-                    ->orWhereNull('clientes.vencimiento_pase');     // Incluye filas donde vencimiento_pase es NULL
+                $query->where('clientes.vencimiento_pase', '<', $HOY)
+                    ->orWhereNull('clientes.vencimiento_pase');
             })
             ->pluck('clientes.id_usuarios')
             ->count();
 
+        $cantidadUsuariosInactivos = Usuarios::where('estado', 0)->count(); //110
+
+        $total = 0;
+
+        if ($arrayCount > $cantidadUsuariosInactivos) {
+            $total = $arrayCount - $cantidadUsuariosInactivos; // = 10
+        }
+
         //! descomentar para actualiza la base de datos
         //Usuarios::whereIn('id', $array)->update(['estado' => 0]);
 
-        Log::info('Se actualizó el estado de ' . $arrayCount . ' usuarios correctamente');
+        Log::info('Se actualizó el estado de ' . $total  . ' usuarios a inactivos correctamente');
         // Log::info( $arrayCount . ''. $array);
 
         $this->info('Mensaje registrado en el log.');
